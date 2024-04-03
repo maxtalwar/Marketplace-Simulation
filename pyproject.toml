@@ -1,0 +1,14 @@
+[tool.poetry]
+name = "marketplace simulation"
+version = "0.1.0"
+description = ""
+authors = ["0xphoton <42502920+maxtalwar@users.noreply.github.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
