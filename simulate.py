@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
-from agents import RandomAgent
 from market import Market
+from agent_populations import generate_random_agents
 
 def simulate(market, agents, num_turns=10):
     for turn in range(num_turns-1):
@@ -11,16 +11,9 @@ def simulate(market, agents, num_turns=10):
         market.price_history.append(market.last_traded_price)
 
 market = Market()
-agents = [
-    RandomAgent(agent_id=0, cash=500, assets=50), # This agent is a middle ground
-    RandomAgent(agent_id=1, cash=1000, assets=0),  # This agent starts with cash and is more likely to buy
-    RandomAgent(agent_id=2, cash=0, assets=100) # This agent starts with assets and can sell
-]
+agents = generate_random_agents(num_agents=3, starting_asset_price=10, total_value=1000)
 
-simulate(market, agents, num_turns=10)
-
-print(market.price_history)
-print(len(market.price_history))
+simulate(market, agents, num_turns=50)
 
 plt.figure(figsize=(10, 6))
 plt.plot(market.price_history, marker='o', linestyle='-')
