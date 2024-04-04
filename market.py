@@ -1,12 +1,5 @@
-import random
-import matplotlib.pyplot as plt
-
-class Order:
-    def __init__(self, agent_id, order_type, price, quantity):
-        self.agent_id = agent_id
-        self.order_type = order_type  # 'buy' or 'sell'
-        self.price = price
-        self.quantity = quantity
+from agents import RandomAgent
+from order import Order
 
 class Market:
     def __init__(self):
@@ -90,58 +83,3 @@ class Market:
             print(f"Agent {order.agent_id} {order.order_type.capitalize()} order - Price: {order.price}, Quantity: {order.quantity}")
         if not self.buy_orders and not self.sell_orders:
             print("Order Book is currently empty.")
-
-class Agent:
-    def __init__(self, agent_id, cash=1000, assets=0):
-        self.agent_id = agent_id
-        self.cash = cash  # Starting cash
-        self.assets = assets  # Starting assets
-
-    def decide_action(self, market):
-        action = random.choice(['buy', 'sell'])
-        price_variation = market.last_traded_price * 0.05
-        price = round(random.uniform(market.last_traded_price - price_variation, market.last_traded_price + price_variation), 1)
-
-        # For buying or selling, use a randomized quantity similar to previous logic
-        if action == 'buy': # and self.cash > 0
-            max_affordable_quantity = self.cash // price  # Use the randomized price here
-            quantity = random.randint(1, max(1, max_affordable_quantity))
-            if quantity > 0:
-                self.cash -= quantity * price
-                order = Order(self.agent_id, 'buy', price, quantity)
-                market.add_order(order)
-        elif action == 'sell' and self.assets > 0:
-            quantity = random.randint(1, self.assets)
-            self.assets -= quantity
-            order = Order(self.agent_id, 'sell', price, quantity)
-            market.add_order(order)
-
-def simulate(market, agents, num_turns=10):
-    for turn in range(num_turns):
-        print(f"\nTurn {turn+1}")
-        for agent in agents:
-            agent.decide_action(market)
-        # The market now automatically matches orders when they are added,
-        # so there's no need to call an explicit execute_orders() method here.
-        market.print_order_book()
-        market.price_history.append(market.last_traded_price)
-
-market = Market()
-agents = [
-    Agent(agent_id=0, cash=500, assets=50),  # This agent starts with assets and can sell
-    Agent(agent_id=1, cash=1000),  # This agent starts with cash and is more likely to buy
-    Agent(agent_id=2, cash=0, assets=100)
-]
-
-simulate(market, agents, num_turns=200)
-
-print(market.price_history)
-print(len(market.price_history))
-
-plt.figure(figsize=(10, 6))
-plt.plot(market.price_history, marker='o', linestyle='-')
-plt.title('Asset Price Over Time')
-plt.xlabel('Time Step')
-plt.ylabel('Last Traded Price')
-plt.grid(True)
-plt.show()
