@@ -11,10 +11,11 @@ class Market:
     def __init__(self):
         self.buy_orders = []
         self.sell_orders = []
+        self.last_traded_price = 10.0
 
     def get_agent_orders(self, agent_id):
         buy_orders = [order for order in self.buy_orders if order.agent_id == agent_id]
-        sell_orders = [order for order in self.sell_ordrs if order_agent_id == agent_id]
+        sell_orders = [order for order in self.sell_ordrs if order.agent_id == agent_id]
 
         return {"Buy": buy_orders,
                 "Sell": sell_orders}
@@ -43,7 +44,7 @@ class Market:
                     print(f"Agent {order.agent_id} cancelled their {opposite_order.order_type} order of {opposite_order.quantity} units at {opposite_order.price} per unit.")
                     opposite_orders.remove(opposite_order)
 
-        # Add the order if it wasn't aggregated or fully adjusted
+        # Process any orders that haven't been already processed (aggregated or used to reduce a previous order)
         if order.quantity > 0:
             same_type_orders.append(order)
             print(f"Agent {order.agent_id} posted a new {order.order_type} order for {order.quantity} units at {order.price} per unit.")
@@ -67,6 +68,7 @@ class Market:
                     sell_order.quantity -= executed_quantity
 
                     print(f"Executing trade: {executed_quantity} units at {sell_order.price} per unit between agent {buy_order.agent_id} (buyer) and agent {sell_order.agent_id} (seller)")
+                    self.last_traded_price = sell_order.price
 
                     if sell_order.quantity == 0:
                         self.sell_orders.pop(j)
@@ -93,25 +95,22 @@ class Agent:
         self.assets = assets  # Starting assets
 
     def decide_action(self, market):
-        # Determine the action type: 'buy' or 'sell'
         action = random.choice(['buy', 'sell'])
+        price_variation = market.last_traded_price * 0.05
+        price = round(random.uniform(market.last_traded_price - price_variation, market.last_traded_price + price_variation), 1)
 
-        # For buying, the quantity is influenced by the amount of cash available
-        if action == 'buy':
-            max_affordable_quantity = self.cash // 10  # Assuming a price of 10 for simplicity
-            # Choose a random quantity up to the maximum affordable, influenced by available cash
+        # For buying or selling, use a randomized quantity similar to previous logic
+        if action == 'buy' and self.cash > 0:
+            max_affordable_quantity = self.cash // price  # Use the randomized price here
             quantity = random.randint(1, max(1, max_affordable_quantity))
             if quantity > 0:
-                self.cash -= quantity * 10  # Update cash to reflect the purchase intent
-                order = Order(self.agent_id, 'buy', price=10, quantity=quantity)
+                self.cash -= quantity * price
+                order = Order(self.agent_id, 'buy', price, quantity)
                 market.add_order(order)
-
-        # For selling, the quantity is influenced by the number of assets held
         elif action == 'sell' and self.assets > 0:
-            # Choose a random quantity up to the maximum available assets
             quantity = random.randint(1, self.assets)
-            self.assets -= quantity  # Update assets to reflect the selling intent
-            order = Order(self.agent_id, 'sell', price=10, quantity=quantity)
+            self.assets -= quantity
+            order = Order(self.agent_id, 'sell', price, quantity)
             market.add_order(order)
 
 def simulate(market, agents, num_turns=10):
@@ -127,7 +126,7 @@ market = Market()
 agents = [
     Agent(agent_id=0, cash=500, assets=50),  # This agent starts with assets and can sell
     Agent(agent_id=1, cash=1000),  # This agent starts with cash and is more likely to buy
-    Agent(agent_id=2, cash=900, assets=10)
+    Agent(agent_id=2, cash=0, assets=100)
 ]
 
 simulate(market, agents)
