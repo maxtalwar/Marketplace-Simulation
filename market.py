@@ -1,4 +1,5 @@
 import random
+import matplotlib.pyplot as plt
 
 class Order:
     def __init__(self, agent_id, order_type, price, quantity):
@@ -12,6 +13,7 @@ class Market:
         self.buy_orders = []
         self.sell_orders = []
         self.last_traded_price = 10.0
+        self.price_history = [self.last_traded_price]
 
     def get_agent_orders(self, agent_id):
         buy_orders = [order for order in self.buy_orders if order.agent_id == agent_id]
@@ -69,6 +71,7 @@ class Market:
 
                     print(f"Executing trade: {executed_quantity} units at {sell_order.price} per unit between agent {buy_order.agent_id} (buyer) and agent {sell_order.agent_id} (seller)")
                     self.last_traded_price = sell_order.price
+                    #self.price_history.append(sell_order.price)
 
                     if sell_order.quantity == 0:
                         self.sell_orders.pop(j)
@@ -100,7 +103,7 @@ class Agent:
         price = round(random.uniform(market.last_traded_price - price_variation, market.last_traded_price + price_variation), 1)
 
         # For buying or selling, use a randomized quantity similar to previous logic
-        if action == 'buy' and self.cash > 0:
+        if action == 'buy': # and self.cash > 0
             max_affordable_quantity = self.cash // price  # Use the randomized price here
             quantity = random.randint(1, max(1, max_affordable_quantity))
             if quantity > 0:
@@ -121,6 +124,7 @@ def simulate(market, agents, num_turns=10):
         # The market now automatically matches orders when they are added,
         # so there's no need to call an explicit execute_orders() method here.
         market.print_order_book()
+        market.price_history.append(market.last_traded_price)
 
 market = Market()
 agents = [
@@ -129,4 +133,15 @@ agents = [
     Agent(agent_id=2, cash=0, assets=100)
 ]
 
-simulate(market, agents)
+simulate(market, agents, num_turns=200)
+
+print(market.price_history)
+print(len(market.price_history))
+
+plt.figure(figsize=(10, 6))
+plt.plot(market.price_history, marker='o', linestyle='-')
+plt.title('Asset Price Over Time')
+plt.xlabel('Time Step')
+plt.ylabel('Last Traded Price')
+plt.grid(True)
+plt.show()
