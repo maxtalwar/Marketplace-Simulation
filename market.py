@@ -54,7 +54,12 @@ class Market:
         # Match orders from different agents
         i = 0
         while i < len(self.buy_orders):
-            buy_order = self.buy_orders[i]
+            try:
+                buy_order = self.buy_orders[i]
+            except IndexError:
+                print("IndexError caught: 'i' is out of range.", "i:", i, "buy_orders:", self.buy_orders)
+                break
+                
             matched = False
             for j, sell_order in enumerate(self.sell_orders):
                 if buy_order.price >= sell_order.price:
@@ -72,14 +77,53 @@ class Market:
                         self.buy_orders.pop(i)
                         i -= 1  # Adjust the index to account for the removal
                         break  # Break since this buy order is fully matched
+
+                    if len(self.buy_orders) == 0:
+                        print("Buy orders list is empty. Exiting loop.")
+                        break
                     
                     matched = True
             if not matched:
                 i += 1  # Only increment if no match was made to avoid skipping orders
 
-    def print_order_book(self):
+    def print_orderbook_detailed(self):
         print("Order Book:")
         for order in self.buy_orders + self.sell_orders:
             print(f"Agent {order.agent_id} {order.order_type.capitalize()} order - Price: {order.price}, Quantity: {order.quantity}")
         if not self.buy_orders and not self.sell_orders:
             print("Order Book is currently empty.")
+
+    def print_orderbook_basic(market):
+        # Aggregate buy orders by price
+        buy_aggregated = {}
+        for order in market.buy_orders:
+            buy_aggregated[order.price] = buy_aggregated.get(order.price, 0) + order.quantity
+
+        # Aggregate sell orders by price
+        sell_aggregated = {}
+        for order in market.sell_orders:
+            sell_aggregated[order.price] = sell_aggregated.get(order.price, 0) + order.quantity
+
+        # Calculate total value for sell orders
+        sell_total_value = sum(price * quantity for price, quantity in sell_aggregated.items())
+        
+        # Calculate total value for buy orders
+        buy_total_value = sum(price * quantity for price, quantity in buy_aggregated.items())
+
+        # Sort and prepare sell orders for display (descending, since sell orders will be displayed on top)
+        sell_orders_sorted = sorted(sell_aggregated.items(), key=lambda x: x[0], reverse=True)
+        
+        # Sort and prepare buy orders for display (also descending to maintain the overall descending price order)
+        buy_orders_sorted = sorted(buy_aggregated.items(), key=lambda x: x[0], reverse=True)
+
+        # Visualize the order book
+        print("\nOrder Book:")
+        print(f"SELL ORDERS: (total value = {round(sell_total_value, 2)})")
+        for price, quantity in sell_orders_sorted:
+            print(f"Price: {price}, Quantity: {quantity}")
+
+        print(f"\nBUY ORDERS: (total value = {round(buy_total_value, 2)})")
+        for price, quantity in buy_orders_sorted:
+            print(f"Price: {price}, Quantity: {quantity}")
+
+

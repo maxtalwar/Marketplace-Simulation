@@ -18,7 +18,7 @@ class RandomAgent(Agent):
         price = round(random.uniform(market.last_traded_price - price_variation, market.last_traded_price + price_variation), 1)
 
         # For buying or selling, use a randomized quantity similar to previous logic
-        if action == 'buy': # and self.cash > 0
+        if action == 'buy' and self.cash > 0:
             max_affordable_quantity = self.cash // price  # Use the randomized price here
             quantity = random.randint(1, max(1, max_affordable_quantity))
             if quantity > 0:
