@@ -22,7 +22,6 @@ class Market:
             if existing_order.agent_id == order.agent_id and existing_order.price == order.price:
                 existing_order.quantity += order.quantity
                 print(f"Agent {order.agent_id} increased their {order.order_type} order by {order.quantity} units at {order.price} per unit. New total quantity: {existing_order.quantity}.")
-                self.match_orders()
                 return
             
         # Reduce opposite orders
@@ -32,7 +31,6 @@ class Market:
                 if opposite_order.quantity > order.quantity:
                     opposite_order.quantity -= order.quantity
                     print(f"Agent {order.agent_id} reduced their {opposite_order.order_type} order by {order.quantity} units at {order.price} per unit. New total quantity: {opposite_order.quantity}.")
-                    self.match_orders()
                     return
                 else:
                     order.quantity -= opposite_order.quantity
