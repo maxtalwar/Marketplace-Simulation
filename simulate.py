@@ -22,14 +22,20 @@ def simulate(market, agents, num_turns=10, verbose=False):
 
         if verbose: market.print_orderbook_basic()
 
-def main(plot=True, verbose=False):
+def main(plot=True, verbose=True):
+    # Starting simulation parameters
+    num_agents = 50
+    starting_asset_price = 10
+    total_value = 1000
+    num_turns = 1000
+
     # Generate agents and market
     market = Market()
-    agents = generate_equal_agents(num_agents=50, starting_asset_price=10, total_value=1000)
+    agents = generate_equal_agents(num_agents=num_agents, starting_asset_price=starting_asset_price, total_value=total_value)
 
     # Measure the simulation execution time
     simulation_start_time = time.time()
-    simulate(market, agents, num_turns=1000, verbose=verbose)
+    simulate(market, agents, num_turns=num_turns, verbose=verbose)
     simulation_end_time = time.time()
     overall_end_time = simulation_end_time
 

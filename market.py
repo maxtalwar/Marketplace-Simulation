@@ -41,8 +41,38 @@ class Market:
         if order.quantity > 0:
             same_type_orders.append(order)
             if verbose: print(f"Agent {order.agent_id} posted a new {order.order_type} order for {order.quantity} units at {order.price} per unit.")
+            self.match_order(order, verbose=verbose)
 
-        self.match_orders(verbose=verbose)
+    def match_order(self, new_order, verbose=True):
+        if new_order.order_type == 'sell':
+            # For a sell order, find the highest priced buy order
+            highest_buy = max(self.buy_orders, key=lambda x: x.price, default=None)
+            if highest_buy and highest_buy.price >= new_order.price:
+                price = highest_buy.price
+                self.execute_trade(highest_buy, new_order, price, verbose=verbose)
+        elif new_order.order_type == 'buy':
+            # For a buy order, find the lowest priced sell order
+            lowest_sell = min(self.sell_orders, key=lambda x: x.price, default=None)
+            if lowest_sell and lowest_sell.price <= new_order.price:
+                price = lowest_sell.price
+                self.execute_trade(new_order, lowest_sell, price, verbose=verbose)
+
+    def execute_trade(self, buy_order, sell_order, price, verbose=True):
+        executed_quantity = min(buy_order.quantity, sell_order.quantity)
+        
+        # Adjust quantities
+        buy_order.quantity -= executed_quantity
+        sell_order.quantity -= executed_quantity
+        if verbose: print(f"Executing trade: {executed_quantity} units at {price} per unit between agent {buy_order.agent_id} (buyer) and agent {sell_order.agent_id} (seller)")
+
+        # Update last traded price
+        self.last_traded_price = price
+
+        # Remove fulfilled orders from the order book
+        if buy_order.quantity == 0:
+            self.buy_orders.remove(buy_order)
+        if sell_order.quantity == 0:
+            self.sell_orders.remove(sell_order)
 
     def match_orders(self, verbose=True):
         # Ensure the buy orders are in descending price order and sell orders in ascending price order
