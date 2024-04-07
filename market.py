@@ -15,13 +15,13 @@ class Market:
         return {"Buy": buy_orders,
                 "Sell": sell_orders}
 
-    def add_order(self, order):
+    def add_order(self, order, verbose=True):
         # Combine similar orders
         same_type_orders = self.buy_orders if order.order_type == 'buy' else self.sell_orders
         for existing_order in same_type_orders:
             if existing_order.agent_id == order.agent_id and existing_order.price == order.price:
                 existing_order.quantity += order.quantity
-                print(f"Agent {order.agent_id} increased their {order.order_type} order by {order.quantity} units at {order.price} per unit. New total quantity: {existing_order.quantity}.")
+                if verbose: print(f"Agent {order.agent_id} increased their {order.order_type} order by {order.quantity} units at {order.price} per unit. New total quantity: {existing_order.quantity}.")
                 return
             
         # Reduce opposite orders
@@ -30,21 +30,21 @@ class Market:
             if opposite_order.agent_id == order.agent_id and opposite_order.price == order.price:
                 if opposite_order.quantity > order.quantity:
                     opposite_order.quantity -= order.quantity
-                    print(f"Agent {order.agent_id} reduced their {opposite_order.order_type} order by {order.quantity} units at {order.price} per unit. New total quantity: {opposite_order.quantity}.")
+                    if verbose: print(f"Agent {order.agent_id} reduced their {opposite_order.order_type} order by {order.quantity} units at {order.price} per unit. New total quantity: {opposite_order.quantity}.")
                     return
                 else:
                     order.quantity -= opposite_order.quantity
-                    print(f"Agent {order.agent_id} cancelled their {opposite_order.order_type} order of {opposite_order.quantity} units at {opposite_order.price} per unit.")
+                    if verbose: print(f"Agent {order.agent_id} cancelled their {opposite_order.order_type} order of {opposite_order.quantity} units at {opposite_order.price} per unit.")
                     opposite_orders.remove(opposite_order)
 
         # Process any orders that haven't been already processed (aggregated or used to reduce a previous order)
         if order.quantity > 0:
             same_type_orders.append(order)
-            print(f"Agent {order.agent_id} posted a new {order.order_type} order for {order.quantity} units at {order.price} per unit.")
+            if verbose: print(f"Agent {order.agent_id} posted a new {order.order_type} order for {order.quantity} units at {order.price} per unit.")
 
-        self.match_orders()
+        self.match_orders(verbose=verbose)
 
-    def match_orders(self):
+    def match_orders(self, verbose=True):
         # Ensure the buy orders are in descending price order and sell orders in ascending price order
         self.buy_orders.sort(key=lambda x: x.price, reverse=True)
         self.sell_orders.sort(key=lambda x: x.price)
@@ -55,7 +55,7 @@ class Market:
             try:
                 buy_order = self.buy_orders[i]
             except IndexError:
-                print("IndexError caught: 'i' is out of range.", "i:", i, "buy_orders:", self.buy_orders)
+                if verbose: print("IndexError caught: 'i' is out of range.", "i:", i, "buy_orders:", self.buy_orders)
                 break
                 
             matched = False
@@ -65,7 +65,7 @@ class Market:
                     buy_order.quantity -= executed_quantity
                     sell_order.quantity -= executed_quantity
 
-                    print(f"Executing trade: {executed_quantity} units at {sell_order.price} per unit between agent {buy_order.agent_id} (buyer) and agent {sell_order.agent_id} (seller)")
+                    if verbose: print(f"Executing trade: {executed_quantity} units at {sell_order.price} per unit between agent {buy_order.agent_id} (buyer) and agent {sell_order.agent_id} (seller)")
                     self.last_traded_price = sell_order.price
 
                     if sell_order.quantity == 0:
