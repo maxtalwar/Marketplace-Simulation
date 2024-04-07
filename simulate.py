@@ -11,9 +11,9 @@ def simulate(market, agents, num_turns=10):
         market.price_history.append(market.last_traded_price)
 
 market = Market()
-agents = generate_equal_agents(num_agents=20, starting_asset_price=10, total_value=1000)
+agents = generate_equal_agents(num_agents=30, starting_asset_price=10, total_value=1000)
 
-simulate(market, agents, num_turns=20)
+simulate(market, agents, num_turns=30)
 
 plt.figure(figsize=(10, 6))
 plt.plot(market.price_history, marker='o', linestyle='-')

@@ -69,7 +69,6 @@ class Market:
 
                     print(f"Executing trade: {executed_quantity} units at {sell_order.price} per unit between agent {buy_order.agent_id} (buyer) and agent {sell_order.agent_id} (seller)")
                     self.last_traded_price = sell_order.price
-                    #self.price_history.append(sell_order.price)
 
                     if sell_order.quantity == 0:
                         self.sell_orders.pop(j)
