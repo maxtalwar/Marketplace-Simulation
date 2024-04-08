@@ -79,7 +79,5 @@ def main():
     # Save new results
     save_results(new_times, filepath)
 
-
-
 if __name__ == "__main__":
     main()

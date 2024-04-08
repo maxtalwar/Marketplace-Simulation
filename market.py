@@ -47,15 +47,22 @@ class Market:
         if new_order.order_type == 'sell':
             # For a sell order, find the highest priced buy order
             highest_buy = max(self.buy_orders, key=lambda x: x.price, default=None)
-            if highest_buy and highest_buy.price >= new_order.price:
+
+            while highest_buy and highest_buy.price >= new_order.price and new_order.quantity > 0:
                 price = highest_buy.price
                 self.execute_trade(highest_buy, new_order, price, verbose=verbose)
+                
+                highest_buy = max(self.buy_orders, key=lambda x: x.price, default=None)
+
         elif new_order.order_type == 'buy':
             # For a buy order, find the lowest priced sell order
             lowest_sell = min(self.sell_orders, key=lambda x: x.price, default=None)
-            if lowest_sell and lowest_sell.price <= new_order.price:
+
+            while lowest_sell and lowest_sell.price <= new_order.price and new_order.quantity > 0:
                 price = lowest_sell.price
                 self.execute_trade(new_order, lowest_sell, price, verbose=verbose)
+                
+                lowest_sell = min(self.sell_orders, key=lambda x: x.price, default=None)
 
     def execute_trade(self, buy_order, sell_order, price, verbose=True):
         executed_quantity = min(buy_order.quantity, sell_order.quantity)
@@ -152,5 +159,3 @@ class Market:
         print(f"\nBUY ORDERS: (total value = {round(buy_total_value, 2)})")
         for price, quantity in buy_orders_sorted:
             print(f"Price: {price}, Quantity: {quantity}")
-
-
