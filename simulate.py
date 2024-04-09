@@ -6,7 +6,7 @@ import_start_time = overall_start_time
 
 import matplotlib.pyplot as plt
 from market import Market
-from agent_populations import generate_random_agents, generate_equal_agents
+from agent_populations import generate_random_agents, generate_equal_agents, generate_base_agents
 
 import_end_time = time.time()
 
@@ -24,14 +24,21 @@ def simulate(market, agents, num_turns=10, verbose=False):
 
 def main(plot=True, verbose=True):
     # Starting simulation parameters
+
+    # Agent parameters
     num_agents = 50
-    starting_asset_price = 10
     total_value = 1000
-    num_turns = 1000
+    trading_frequency = 0.5
+    cash = 500
+    assets = 5000
+
+    # Simulation parameters
+    num_turns = 100
+    starting_asset_price = 10
 
     # Generate agents and market
-    market = Market()
-    agents = generate_equal_agents(num_agents=num_agents, starting_asset_price=starting_asset_price, total_value=total_value)
+    market = Market(starting_asset_price=starting_asset_price)
+    agents = generate_base_agents(num_agents=num_agents, cash=cash, assets=assets, trading_frequency=trading_frequency)
 
     # Measure the simulation execution time
     simulation_start_time = time.time()

@@ -2,10 +2,10 @@ from agents import RandomAgent
 from order import Order
 
 class Market:
-    def __init__(self):
+    def __init__(self, starting_asset_price):
         self.buy_orders = []
         self.sell_orders = []
-        self.last_traded_price = 10.0
+        self.last_traded_price = starting_asset_price
         self.price_history = [self.last_traded_price]
 
     def get_agent_orders(self, agent_id):
@@ -61,7 +61,7 @@ class Market:
             while lowest_sell and lowest_sell.price <= new_order.price and new_order.quantity > 0:
                 price = lowest_sell.price
                 self.execute_trade(new_order, lowest_sell, price, verbose=verbose)
-                
+
                 lowest_sell = min(self.sell_orders, key=lambda x: x.price, default=None)
 
     def execute_trade(self, buy_order, sell_order, price, verbose=True):
