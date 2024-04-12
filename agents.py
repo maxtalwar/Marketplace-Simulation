@@ -23,7 +23,7 @@ class RandomAgent(Agent):
         
         action = random.choice(['buy', 'sell'])
         price_variation = market.last_traded_price * 0.05
-        price = round(random.uniform(market.last_traded_price - price_variation, market.last_traded_price + price_variation), 1)
+        price = round(random.uniform(market.last_traded_price - price_variation, market.last_traded_price + price_variation), 3)
 
         # Make a trade with a randomized price and quantity based on the last traded price and amount of cash/assets on hand
         if action == 'buy' and self.cash > 0:

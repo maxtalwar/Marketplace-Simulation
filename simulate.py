@@ -26,14 +26,14 @@ def main(plot=True, verbose=True):
     # Starting simulation parameters
 
     # Agent parameters
-    num_agents = 50
+    num_agents = 500
     total_value = 1000
     trading_frequency = 0.5
     cash = 500
     assets = 5000
 
     # Simulation parameters
-    num_turns = 100
+    num_turns = 200
     starting_asset_price = 10
 
     # Generate agents and market
