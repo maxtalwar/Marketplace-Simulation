@@ -2,11 +2,29 @@ from agents import RandomAgent
 from order import Order
 
 class Market:
-    def __init__(self, starting_asset_price):
+    def __init__(self, starting_asset_price, agents):
         self.buy_orders = []
         self.sell_orders = []
         self.last_traded_price = starting_asset_price
         self.price_history = [self.last_traded_price]
+        self.cash_history = []
+        self.asset_history = []
+        self.agents = agents
+
+    def update_market_state(self, agents):
+        # Sum all cash and assets from all agents to get total market values
+        total_cash = sum(agent.cash for agent in agents)
+        total_assets = sum(agent.assets for agent in agents)
+        
+        # Update histories
+        self.cash_history.append(total_cash)
+        self.asset_history.append(total_assets)
+
+    def remove_order(self, order):
+        if order.order_type == 'buy':
+            self.buy_orders.remove(order)
+        elif order.order_type == 'sell':
+            self.sell_orders.remove(order)
 
     def get_agent_orders(self, agent_id):
         buy_orders = [order for order in self.buy_orders if order.agent_id == agent_id]
@@ -67,19 +85,40 @@ class Market:
     def execute_trade(self, buy_order, sell_order, price, verbose=True):
         executed_quantity = min(buy_order.quantity, sell_order.quantity)
         
-        # Adjust quantities
+        # Calculate the total cost of the trade
+        total_trade_cost = executed_quantity * price
+        
+        # Find the buyer and seller agents based on agent_id
+        buyer = next((agent for agent in self.agents if agent.agent_id == buy_order.agent_id), None)
+        seller = next((agent for agent in self.agents if agent.agent_id == sell_order.agent_id), None)
+        
+        if buyer and seller:
+            # Transfer cash from buyer to seller
+            buyer.cash -= total_trade_cost
+            seller.cash += total_trade_cost
+
+            # Transfer assets from seller to buyer
+            seller.assets -= executed_quantity
+            buyer.assets += executed_quantity
+
+            if verbose:
+                print(f"Executing trade: {executed_quantity} units at {price} per unit between buyer {buyer.agent_id} and seller {seller.agent_id}")
+                print(f"Cash transferred: {total_trade_cost} from buyer {buyer.agent_id} to seller {seller.agent_id}")
+                print(f"Assets transferred: {executed_quantity} units from seller {seller.agent_id} to buyer {buyer.agent_id}")
+
+        # Adjust quantities in the order book
         buy_order.quantity -= executed_quantity
         sell_order.quantity -= executed_quantity
-        if verbose: print(f"Executing trade: {executed_quantity} units at {price} per unit between agent {buy_order.agent_id} (buyer) and agent {sell_order.agent_id} (seller)")
 
         # Update last traded price
         self.last_traded_price = price
 
         # Remove fulfilled orders from the order book
         if buy_order.quantity == 0:
-            self.buy_orders.remove(buy_order)
+            self.remove_order(buy_order)
         if sell_order.quantity == 0:
-            self.sell_orders.remove(sell_order)
+            self.remove_order(sell_order)
+
 
     def match_orders(self, verbose=True):
         # Ensure the buy orders are in descending price order and sell orders in ascending price order

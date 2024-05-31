@@ -10,17 +10,28 @@ from agent_populations import generate_random_agents, generate_equal_agents, gen
 
 import_end_time = time.time()
 
-def simulate(market, agents, num_turns=10, verbose=False):
+def simulate(market, num_turns=10, verbose=False):
     # Repeat
     for turn in range(num_turns):
+        total_cash = 0
+        total_assets = 0
+
         if verbose: print(f"\nTurn {turn+1}")
 
-        for agent in agents:
+        for order in list(market.buy_orders + market.sell_orders):
+            if order.decrement_ttl():
+                market.remove_order(order)
+                print(f"Order from agent {order.agent_id} expired and was removed from the market.")
+
+        for agent in market.agents:
             agent.decide_action(market, verbose=verbose)
-        
+
+        market.update_market_state(market.agents)
+
         market.price_history.append(market.last_traded_price)
 
         if verbose: market.print_orderbook_basic()
+
 
 def main(plot=True, verbose=True):
     # Starting simulation parameters
@@ -33,16 +44,16 @@ def main(plot=True, verbose=True):
     assets = 5000
 
     # Simulation parameters
-    num_turns = 200
-    starting_asset_price = 10
+    num_turns = 100
+    starting_asset_price = .11
 
     # Generate agents and market
-    market = Market(starting_asset_price=starting_asset_price)
     agents = generate_base_agents(num_agents=num_agents, cash=cash, assets=assets, trading_frequency=trading_frequency)
+    market = Market(starting_asset_price=starting_asset_price, agents=agents)
 
     # Measure the simulation execution time
     simulation_start_time = time.time()
-    simulate(market, agents, num_turns=num_turns, verbose=verbose)
+    simulate(market, num_turns=num_turns, verbose=verbose)
     simulation_end_time = time.time()
     overall_end_time = simulation_end_time
 
@@ -53,14 +64,33 @@ def main(plot=True, verbose=True):
         print(f"Overall simulation took {round(overall_end_time - overall_start_time, 3)} seconds to complete.")
 
     if plot:
-        # Plot data
-        plt.figure(figsize=(10, 6))
-        plt.plot(market.price_history, marker='o', linestyle='-')
-        plt.title('Asset Price Over Time')
-        plt.xlabel('Time Step')
-        plt.ylabel('Last Traded Price')
-        plt.grid(True)
-        plt.show()
+        plot_market_data(market)
+
+def plot_market_data(market):
+    plt.figure(figsize=(15, 9))
+
+    # Plot price history
+    plt.subplot(3, 1, 1)
+    plt.plot(market.price_history, marker='o', linestyle='-', color='blue')
+    plt.title('Market Data Over Time')
+    plt.ylabel('Last Traded Price')
+    plt.grid(True)
+
+    # Plot cash history
+    plt.subplot(3, 1, 2)
+    plt.plot(market.cash_history, marker='o', linestyle='-', color='green')
+    plt.ylabel('Total Cash in Market')
+    plt.grid(True)
+
+    # Plot asset history
+    plt.subplot(3, 1, 3)
+    plt.plot(market.asset_history, marker='o', linestyle='-', color='red')
+    plt.xlabel('Time Step')
+    plt.ylabel('Total Assets in Market')
+    plt.grid(True)
+
+    plt.tight_layout()
+    plt.show()
 
 if __name__ == "__main__":
     main()
