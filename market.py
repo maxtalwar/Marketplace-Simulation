@@ -49,9 +49,26 @@ class Market:
         for order_list in [self.buy_orders, self.sell_orders]:
             expired_orders = [order for order in order_list if order.decrement_ttl()]
             for order in expired_orders:
+                if order.order_type == 'buy':
+                    # Reimburse the cash spent on the buy order
+                    cash_to_reimburse = order.quantity * order.price
+                    # Find the agent who owns this order
+                    agent = next((a for a in self.agents if a.agent_id == order.agent_id), None)
+                    if agent:
+                        agent.cash += cash_to_reimburse
+                elif order.order_type == 'sell':
+                    # Reimburse the assets tied up in the sell order
+                    assets_to_reimburse = order.quantity
+                    # Find the agent who owns this order
+                    agent = next((a for a in self.agents if a.agent_id == order.agent_id), None)
+                    if agent:
+                        agent.assets += assets_to_reimburse
+
+                # Remove the order from the market
                 order_list.remove(order)
                 if verbose:
                     print(f"Order from agent {order.agent_id} expired and was removed from the market.")
+
 
     def remove_order(self, order):
         if order.order_type == 'buy':
