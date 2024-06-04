@@ -18,10 +18,7 @@ def simulate(market, num_turns=10, verbose=False):
 
         if verbose: print(f"\nTurn {turn+1}")
 
-        """for order in list(market.buy_orders + market.sell_orders):
-            if order.decrement_ttl():
-                market.remove_order(order)
-                print(f"Order from agent {order.agent_id} expired and was removed from the market.")"""
+        market.purge_old_orders(verbose=verbose)
 
         for agent in market.agents:
             agent.decide_action(market, verbose=verbose)
@@ -66,30 +63,47 @@ def main(plot=True, verbose=True):
         plot_market_data(market)
 
 def plot_market_data(market):
-    plt.figure(figsize=(15, 9))
+    plt.figure(figsize=(15, 12))  # Adjusted for better visibility
 
     # Plot price history
-    plt.subplot(3, 1, 1)
+    plt.subplot(3, 2, 1)  # First row, first column
     plt.plot(market.price_history, marker='o', linestyle='-', color='blue')
-    plt.title('Market Data Over Time')
+    plt.title('Price History')
     plt.ylabel('Last Traded Price')
     plt.grid(True)
 
-    # Plot cash history
-    plt.subplot(3, 1, 2)
+    # Plot total cash history
+    plt.subplot(3, 2, 2)  # First row, second column
     plt.plot(market.cash_history, marker='o', linestyle='-', color='green')
+    plt.title('Total Cash History')
     plt.ylabel('Total Cash in Market')
     plt.grid(True)
 
-    # Plot asset history
-    plt.subplot(3, 1, 3)
+    # Plot circulating cash history
+    plt.subplot(3, 2, 3)  # Second row, first column
+    plt.plot(market.circulating_cash_history, marker='o', linestyle='-', color='green')
+    plt.title('Circulating Cash History')
+    plt.ylabel('Circulating Cash in Market')
+    plt.grid(True)
+
+    # Plot total asset history
+    plt.subplot(3, 2, 4)  # Second row, second column
     plt.plot(market.asset_history, marker='o', linestyle='-', color='red')
-    plt.xlabel('Time Step')
+    plt.title('Total Asset History')
     plt.ylabel('Total Assets in Market')
     plt.grid(True)
 
-    plt.tight_layout()
+    # Plot circulating asset history
+    plt.subplot(3, 2, 5)  # Third row, first column
+    plt.plot(market.circulating_asset_history, marker='o', linestyle='-', color='red')
+    plt.title('Circulating Asset History')
+    plt.xlabel('Time Step')
+    plt.ylabel('Circulating Assets in Market')
+    plt.grid(True)
+
+    plt.tight_layout()  # This ensures that the plots do not overlap
     plt.show()
+
 
 if __name__ == "__main__":
     main()

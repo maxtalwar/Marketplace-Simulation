@@ -6,10 +6,20 @@ class Market:
         self.buy_orders = []
         self.sell_orders = []
         self.last_traded_price = starting_asset_price
+        self.agents = agents
+        
+        # Metrics to plot
+
         self.price_history = [self.last_traded_price]
+
+        # Total value only looking at cash and assets on hand for agents
+        self.circulating_cash_history = []
+        self.circulating_asset_history = []
+
+        # Total value including order value
         self.cash_history = []
         self.asset_history = []
-        self.agents = agents
+
 
     def update_market_state(self, agents):
         # Sum all cash and assets from all agents to get total market values
@@ -30,8 +40,18 @@ class Market:
         buy_total_value = sum(price * quantity for price, quantity in buy_aggregated.items())
         
         # Update histories
+        self.circulating_cash_history.append(total_cash)
+        self.circulating_asset_history.append(total_assets)
         self.cash_history.append(total_cash + sell_total_value)
         self.asset_history.append(total_assets + buy_total_value)
+
+    def purge_old_orders(self, verbose=False):
+        for order_list in [self.buy_orders, self.sell_orders]:
+            expired_orders = [order for order in order_list if order.decrement_ttl()]
+            for order in expired_orders:
+                order_list.remove(order)
+                if verbose:
+                    print(f"Order from agent {order.agent_id} expired and was removed from the market.")
 
     def remove_order(self, order):
         if order.order_type == 'buy':
