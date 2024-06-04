@@ -33,8 +33,10 @@ class RandomAgent(Agent):
                 self.cash -= quantity * price
                 order = Order(self.agent_id, 'buy', price, quantity)
                 market.add_order(order, verbose=verbose)
+        
         elif action == 'sell' and self.assets > 0:
             quantity = random.randint(1, self.assets)
-            self.assets -= quantity
-            order = Order(self.agent_id, 'sell', price, quantity)
-            market.add_order(order, verbose=verbose)
+            if quantity > 0:
+                self.assets -= quantity
+                order = Order(self.agent_id, 'sell', price, quantity)
+                market.add_order(order, verbose=verbose)

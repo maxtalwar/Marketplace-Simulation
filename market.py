@@ -15,10 +15,23 @@ class Market:
         # Sum all cash and assets from all agents to get total market values
         total_cash = sum(agent.cash for agent in agents)
         total_assets = sum(agent.assets for agent in agents)
+
+        buy_aggregated = {}
+        sell_aggregated = {}
+
+        for order in self.buy_orders:
+            buy_aggregated[order.price] = buy_aggregated.get(order.price, 0) + order.quantity
+
+        for order in self.sell_orders:
+            sell_aggregated[order.price] = sell_aggregated.get(order.price, 0) + order.quantity
+
+        # Calculate total value for orders
+        sell_total_value = sum(price * quantity for price, quantity in sell_aggregated.items())
+        buy_total_value = sum(price * quantity for price, quantity in buy_aggregated.items())
         
         # Update histories
-        self.cash_history.append(total_cash)
-        self.asset_history.append(total_assets)
+        self.cash_history.append(total_cash + sell_total_value)
+        self.asset_history.append(total_assets + buy_total_value)
 
     def remove_order(self, order):
         if order.order_type == 'buy':
@@ -94,11 +107,9 @@ class Market:
         
         if buyer and seller:
             # Transfer cash from buyer to seller
-            buyer.cash -= total_trade_cost
             seller.cash += total_trade_cost
 
             # Transfer assets from seller to buyer
-            seller.assets -= executed_quantity
             buyer.assets += executed_quantity
 
             if verbose:

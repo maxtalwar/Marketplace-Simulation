@@ -18,16 +18,15 @@ def simulate(market, num_turns=10, verbose=False):
 
         if verbose: print(f"\nTurn {turn+1}")
 
-        for order in list(market.buy_orders + market.sell_orders):
+        """for order in list(market.buy_orders + market.sell_orders):
             if order.decrement_ttl():
                 market.remove_order(order)
-                print(f"Order from agent {order.agent_id} expired and was removed from the market.")
+                print(f"Order from agent {order.agent_id} expired and was removed from the market.")"""
 
         for agent in market.agents:
             agent.decide_action(market, verbose=verbose)
 
         market.update_market_state(market.agents)
-
         market.price_history.append(market.last_traded_price)
 
         if verbose: market.print_orderbook_basic()
